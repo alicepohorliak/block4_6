@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Canvas Game</title>
+    <style>
+      canvas {
+        border: 1px solid #111f95;
+        display: block;
+        margin: 0 auto;
+      }
+      table {
+        border-collapse: collapse;
+        width: 50%;
+        margin: 20px auto;
+      }
+      th,
+      td {
+        border: 1px solid #111f95;
+        text-align: left;
+        padding: 8px;
+      }
+      th {
+        background-color: #ffffff;
+      }
+      button {
+        padding-left: 120px;
+        margin-top: 17px;
+        display: inline-block;
+        /* Зробити кнопку блоком */
+        padding: 10px 20px;
+        /* Відступи всередині кнопки */
+        background-color: #111f95;
+        /* Колір фону кнопки */
+        color: white;
+        /* Колір тексту */
+        text-align: center;
+        /* Вирівнювання тексту по центру */
+        text-decoration: none;
+        /* Зняти підкреслення посилання */
+        font-size: 16px;
+        /* Розмір шрифту */
+        border-radius: 5px;
+        /* Радіус кутів кнопки */
+        border: none;
+        /* Видалити рамку */
+        cursor: pointer;
+        /* Змінити курсор при наведенні на кнопку */
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="480" height="320"></canvas>
+    <p id="score"></p>
+    <button onclick="startGame()">Start</button>
+    <table>
+      <tr>
+        <th>Top Scores</th>
+      </tr>
+      <tr>
+        <td id="topScores"></td>
+      </tr>
+      <tr>
+        <th>Worst Scores</th>
+      </tr>
+      <tr>
+        <td id="worstScores"></td>
+      </tr>
+    </table>
+
+    <script>
+      var myGamePiece;
+      var myObstacles = [];
+      var score = 0;
+      var scores = [];
+
+      function startGame() {
+        myGamePiece = new component(30, 30, "red", 10, 120);
+        myObstacles = [];
+        score = 0;
+        document.getElementById("score").innerHTML = "Score: " + score;
+        myGameArea.start();
+      }
+
+      var myGameArea = {
+        canvas: document.getElementById("myCanvas"),
+        start: function () {
+          this.context = this.canvas.getContext("2d");
+          this.frameNo = 0;
+          this.interval = setInterval(updateGameArea, 20);
+          window.addEventListener("keydown", function (e) {
+            myGameArea.key = e.keyCode;
+          });
+          window.addEventListener("keyup", function (e) {
+            myGameArea.key = false;
+          });
+        },
+        clear: function () {
+          this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        },
+      };
+
+      function component(width, height, color, x, y) {
+        this.width = width;
+        this.height = height;
+        this.color = color;
+        this.x = x;
+        this.y = y;
+        this.speedX = 0;
+        this.speedY = 0;
+        this.update = function () {
+          ctx = myGameArea.context;
+          ctx.fillStyle = this.color;
+          ctx.fillRect(this.x, this.y, this.width, this.height);
+        };
+        this.newPos = function () {
+          this.x += this.speedX;
+          this.y += this.speedY;
+        };
+      }
+
+      function updateGameArea() {
+        myGameArea.clear();
+        myGamePiece.speedX = 0;
+        myGamePiece.speedY = 0;
+        if (myGameArea.key && myGameArea.key == 37) {
+          myGamePiece.speedX = -1;
+        }
+        if (myGameArea.key && myGameArea.key == 39) {
+          myGamePiece.speedX = 1;
+        }
+        if (myGameArea.key && myGameArea.key == 38) {
+          myGamePiece.speedY = -1;
+        }
+        if (myGameArea.key && myGameArea.key == 40) {
+          myGamePiece.speedY = 1;
+        }
+        myGamePiece.newPos();
+        myGamePiece.update();
+        updateObstacles();
+        checkCollision();
+        updateScore();
+      }
+
+      function updateObstacles() {
+        for (var i = 0; i < myObstacles.length; i++) {
+          myObstacles[i].x -= 1;
+          myObstacles[i].update();
+        }
+        myGameArea.frameNo++;
+        if (myGameArea.frameNo % 120 === 0) {
+          var x = myGameArea.canvas.width;
+          var minHeight = 20;
+          var maxHeight = 200;
+          var height = Math.floor(
+            Math.random() * (maxHeight - minHeight + 1) + minHeight
+          );
+          var minGap = 50;
+          var maxGap = 200;
+          var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+          myObstacles.push(new component(10, height, "green", x, 0));
+          myObstacles.push(
+            new component(10, x - height - gap, "green", x, height + gap)
+          );
+        }
+      }
+      function checkCollision() {
+        for (var i = 0; i < myObstacles.length; i++) {
+          if (
+            myGamePiece.x < myObstacles[i].x + myObstacles[i].width &&
+            myGamePiece.x + myGamePiece.width > myObstacles[i].x &&
+            myGamePiece.y < myObstacles[i].y + myObstacles[i].height &&
+            myGamePiece.y + myGamePiece.height > myObstacles[i].y
+          ) {
+            // Collision detected, stop the game and add score to table
+            clearInterval(myGameArea.interval);
+            scores.push(score);
+            scores.sort(function (a, b) {
+              return b - a;
+            });
+            updateScoreTable();
+          }
+        }
+      }
+
+      function updateScore() {
+        score++;
+        document.getElementById("score").innerHTML = "Score: " + score;
+      }
+
+      function updateScoreTable() {
+        var sortedScores = scores.slice().sort(function (a, b) {
+          return a - b;
+        });
+        var bestThree = sortedScores
+          .slice(Math.max(sortedScores.length - 3, 0))
+          .reverse();
+        var worstThree = sortedScores.slice(0, 3);
+        var topScoresHTML = "";
+        var worstScoresHTML = "";
+        // Prepare HTML for best three scores
+        for (var i = 0; i < bestThree.length; i++) {
+          topScoresHTML += "<p>" + (i + 1) + ". " + bestThree[i] + "</p>";
+        }
+        // Prepare HTML for worst three scores
+        for (var i = 0; i < worstThree.length; i++) {
+          worstScoresHTML +=
+            "<p>" + (sortedScores.length - i) + ". " + worstThree[i] + "</p>";
+        }
+        // Update table with best and worst scores
+        document.getElementById("topScores").innerHTML = topScoresHTML;
+        document.getElementById("worstScores").innerHTML = worstScoresHTML;
+      }
+    </script>
+  </body>
+</html>

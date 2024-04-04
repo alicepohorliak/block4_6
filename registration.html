@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>surveyForm</title>
+    <link rel="stylesheet" href="css/styles2.css" />
+  </head>
+  <body>
+    <h1>Залишай свою заявку</h1>
+    <form id="surveyForm">
+      <h2>Опитування</h2>
+      <div class="education-container">
+        <label for="illumination">Яка у вас освіта?</label><br />
+        <select id="illumination" name="illumination">
+          <option value="magistrater">Закінчена вища</option>
+          <option value="bakalavr">Не закінчена вища</option>
+          <option value="school">Середня</option>
+          <option value="none">Немає</option></select
+        ><br /><br />
+      </div>
+
+      <div class="faculty-container">
+        <label for="faculty">Вкажіть факультет на якому ви навчались:</label
+        ><br />
+        <input type="text" id="faculty" name="faculty" required /><br /><br />
+
+        <label>У вас був досвід в ІТ?</label><br />
+        <input type="radio" id="stream1" name="stream" value="stream1" />
+        <label for="stream1">Так</label>
+        <input type="radio" id="stream2" name="stream" value="stream2" />
+        <label for="stream2">Ні</label><br /><br />
+      </div>
+
+      <div class="info-container">
+        <label>Звідки ви про нас дізнались?</label><br />
+        <input
+          type="checkbox"
+          id="group1"
+          name="group[]"
+          value="group1"
+        /><label for="group1">Знайомі</label><br />
+        <input
+          type="checkbox"
+          id="group2"
+          name="group[]"
+          value="group2"
+        /><label for="group2">Соцмережі</label><br />
+        <input
+          type="checkbox"
+          id="group3"
+          name="group[]"
+          value="group3"
+        /><label for="group3">В інтернеті</label><br />
+        <input
+          type="checkbox"
+          id="group4"
+          name="group[]"
+          value="group4"
+        /><label for="group4">Реклама</label><br />
+      </div>
+
+      <div class="time-container">
+      <label for="interviewTime"
+        >Виберіть зручний час для проходження співбесіди:</label
+      ><br />
+      <input
+        type="datetime-local"
+        id="interviewTime"
+        name="interviewTime"
+      /><br /><br />
+    </form>
+      </div>
+
+    <form id="registrationForm">
+      <h2>Особисті дані</h2>
+      <label for="name">Ім'я:</label><br />
+      <input type="text" id="name" name="name" required /><br />
+      <label for="phone">Номер телефону:</label><br />
+      <input type="text" id="phone" name="phone" required /><br />
+      <label for="email">Електронна пошта:</label><br />
+      <input type="text" id="email" name="email" required /><br /><br />
+    </form>
+
+    <input type="submit" value="Відправити" onclick="submitForms()" />
+
+    <script>
+      function submitForms() {
+        const surveyFormData = new FormData(
+          document.getElementById("surveyForm")
+        );
+        const registrationFormData = new FormData(
+          document.getElementById("registrationForm")
+        );
+
+        const surveyData = {};
+        for (const [key, value] of surveyFormData.entries()) {
+          surveyData[key] = value;
+        }
+
+        const registrationData = {};
+        for (const [key, value] of registrationFormData.entries()) {
+          registrationData[key] = value;
+        }
+
+        const surveyFormElements =
+          document.getElementById("surveyForm").elements;
+        const registrationFormElements =
+          document.getElementById("registrationForm").elements;
+
+        // Перевірка чи всі поля введені
+        let allFieldsEntered = true;
+        for (let i = 0; i < surveyFormElements.length; i++) {
+          if (surveyFormElements[i].required && !surveyFormElements[i].value) {
+            allFieldsEntered = false;
+            break;
+          }
+        }
+        for (let i = 0; i < registrationFormElements.length; i++) {
+          if (
+            registrationFormElements[i].required &&
+            !registrationFormElements[i].value
+          ) {
+            allFieldsEntered = false;
+            break;
+          }
+        }
+
+        if (!allFieldsEntered) {
+          alert("Будь ласка, введіть усі дані.");
+          return;
+        }
+
+        localStorage.setItem("surveyData", JSON.stringify(surveyData));
+        localStorage.setItem(
+          "registrationData",
+          JSON.stringify(registrationData)
+        );
+
+        console.log("Дані опитування збережено в LocalStorage:", surveyData);
+        console.log(
+          "Дані реєстрації збережено в LocalStorage:",
+          registrationData
+        );
+
+        alert("Дані опитування та реєстрації збережено!");
+
+        document.getElementById("surveyForm").reset();
+        document.getElementById("registrationForm").reset();
+      }
+    </script>
+  </body>
+</html>
